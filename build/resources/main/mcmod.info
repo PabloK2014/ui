@@ -1,0 +1,16 @@
+[
+{
+  "modid": "iu_addon",
+  "name": "Industrial Upgrade Addon",
+  "description": "Adds Improved Molecular Transformer.",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["Me"],
+  "credits": "",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]

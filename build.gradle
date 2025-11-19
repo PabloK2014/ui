@@ -1,0 +1,75 @@
+plugins {
+    id 'java'
+    id 'maven-publish'
+    id 'com.gtnewhorizons.retrofuturagradle' version '1.3.25'
+}
+
+version = '1.0.0'
+group = 'com.myaddon.iuaddon'
+archivesBaseName = 'iu_addon'
+
+// Set Java 8 compatibility
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(8))
+    }
+}
+
+minecraft {
+    mcVersion = '1.12.2'
+    
+    // Define username for dev env
+    username = "Developer"
+    
+    // Add local libs to classpath
+    // extraRunJvmArguments.add("-Djava.library.path=${file('libs')}")
+}
+
+repositories {
+    maven {
+        name = "Progwml6 maven"
+        url = "https://dvs1.progwml6.com/files/maven/"
+    }
+    maven {
+        name = "CleanroomMC Maven"
+        url = "https://maven.cleanroommc.com"
+    }
+    maven {
+        name = 'IC2'
+        url = 'http://maven.ic2.player.to'
+        allowInsecureProtocol = true
+    }
+    maven {
+        url "https://www.cursemaven.com"
+    }
+    flatDir {
+        dirs 'libs'
+    }
+}
+
+dependencies {
+    // Local Dependencies
+    implementation name: 'industrialcraft-2-2.8.221-ex112'
+    implementation name: 'IndustrialUpgrade-1.12.2-2.4'
+    
+    // Other dependencies
+    compileOnly "mezz.jei:jei_1.12.2:4.15.0.272:api"
+}
+
+jar {
+    manifest {
+        attributes([
+            "Specification-Title": "iu_addon",
+            "Specification-Vendor": "myaddon",
+            "Specification-Version": "1",
+            "Implementation-Title": project.name,
+            "Implementation-Version": "${version}",
+            "Implementation-Vendor" :"myaddon",
+            "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+        ])
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
