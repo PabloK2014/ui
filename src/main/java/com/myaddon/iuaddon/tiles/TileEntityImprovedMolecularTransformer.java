@@ -1,14 +1,194 @@
 package com.myaddon.iuaddon.tiles;
 
 import com.denfop.tiles.base.TileEntityMolecularTransformer;
-import net.minecraft.util.ITickable;
+import com.denfop.api.recipe.InvSlotRecipes;
+import com.denfop.api.recipe.MachineRecipe;
+import ic2.core.block.invslot.InvSlotOutput;
+import ic2.core.IC2;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import java.util.List;
 
 public class TileEntityImprovedMolecularTransformer extends TileEntityMolecularTransformer {
 
+    public InvSlotRecipes[] inputSlots = new InvSlotRecipes[12];
+    public InvSlotOutput[] outputSlots = new InvSlotOutput[12];
+    public double[] progressPerSlot = new double[12];
+    public MachineRecipe[] currentRecipes = new MachineRecipe[12];
+    public double[] guiProgressPerSlot = new double[12];
+
     public TileEntityImprovedMolecularTransformer() {
         super();
-        // Increase operations per tick or other stats
-        this.operationsPerTick = 2; 
+        
+        System.out.println("TileEntityImprovedMolecularTransformer CONSTRUCTOR START");
+        this.operationsPerTick = 2;
+        
+        // Parent already creates energy component via:
+        // this.energy = this.addComponent(AdvEnergy.asBasicSink(this, 0, 14).addManagedSlot(this.dischargeSlot));
+        
+        // Initialize 12 input and output slots
+        for (int i = 0; i < 12; i++) {
+            this.inputSlots[i] = new InvSlotRecipes(this, "molecular", this);
+            // Size 1 for output slots
+            this.outputSlots[i] = new InvSlotOutput(this, "output" + i, 1);
+            this.progressPerSlot[i] = 0;
+            this.guiProgressPerSlot[i] = 0;
+        }
+        
+        // CRITICAL: Do NOT link this.inputSlot to our slots. 
+        // The parent class uses this.inputSlot in its updateEntityServer logic (which we are bypassing),
+        // but we want to ensure no accidental interference.
+        // this.inputSlot is already initialized by parent constructor, so we leave it alone (it will be empty).
+        
+        System.out.println("TileEntityImprovedMolecularTransformer CONSTRUCTOR END");
+    }
+
+    @Override
+    protected void onLoaded() {
+        System.out.println("TileEntityImprovedMolecularTransformer onLoaded START");
+        super.onLoaded();
+        
+        if (IC2.platform.isSimulating()) {
+            // Load all input slots
+            for (int i = 0; i < 12; i++) {
+                this.inputSlots[i].load();
+            }
+            this.setOverclockRates();
+        }
+        
+        System.out.println("TileEntityImprovedMolecularTransformer onLoaded END");
+    }
+
+    @Override
+    public void setOverclockRates() {
+        // Calculate total energy capacity needed for all slots with valid recipes
+        double totalCapacity = 0;
+        
+        for (int i = 0; i < 12; i++) {
+            MachineRecipe recipe = this.inputSlots[i].process();
+            this.currentRecipes[i] = recipe;
+            
+            // If recipe exists and output can accept it, add to capacity requirement
+            if (recipe != null && this.outputSlots[i].canAdd(recipe.getRecipe().output.items)) {
+                double energyNeeded = recipe.getRecipe().output.metadata.getDouble("energy");
+                totalCapacity += energyNeeded;
+            }
+        }
+        
+        // Set capacity dynamically
+        if (this.energy != null) {
+            this.energy.setCapacity(totalCapacity);
+        }
+        
+        // Log capacity changes
+        // System.out.println("TileEntityImprovedMolecularTransformer: setOverclockRates - capacity set to " + totalCapacity);
+    }
+
+    @Override
+    public void updateEntityServer() {
+        // CRITICAL: Do NOT call super.updateEntityServer()
+        // The parent TileEntityMolecularTransformer drains all energy if its own (empty) inputSlot has no recipe.
+        // We must manually update the energy component and handle logic ourselves.
+        
+        // 1. Update Energy Component (handles discharge slot and internal state)
+        if (this.energy != null) {
+            this.energy.onWorldTick();
+            this.guiChargeLevel = this.energy.getFillRatio();
+        }
+
+        // 2. Ensure capacity is correct (dynamic based on recipes)
+        setOverclockRates();
+        
+        boolean needsUpdate = false;
+        
+        // 3. Debug logging (throttle)
+        if (this.world.getTotalWorldTime() % 20 == 0) {
+             System.out.println("TileEntityImprovedMolecularTransformer: Energy = " + this.energy.getEnergy() + " / " + this.energy.getCapacity());
+        }
+
+        // 4. Process recipes for all 12 slots
+        for (int i = 0; i < 12; i++) {
+            MachineRecipe recipe = this.inputSlots[i].process();
+            
+            if (recipe != null) {
+                 if (this.world.getTotalWorldTime() % 20 == 0) {
+                     System.out.println("Slot " + i + ": Recipe found! Output: " + recipe.getRecipe().output.items.get(0).getDisplayName());
+                     System.out.println("Energy needed: " + recipe.getRecipe().output.metadata.getDouble("energy"));
+                     
+                     ItemStack currentOutput = this.outputSlots[i].get();
+                     if (currentOutput != null && !currentOutput.isEmpty()) {
+                         System.out.println("Slot " + i + " output has: " + currentOutput.getCount() + "x " + currentOutput.getDisplayName());
+                     } else {
+                         System.out.println("Slot " + i + " output is EMPTY");
+                     }
+                     System.out.println("Slot " + i + " canAdd: " + this.outputSlots[i].canAdd(recipe.getRecipe().output.items));
+                 }
+
+                if (this.outputSlots[i].canAdd(recipe.getRecipe().output.items)) {
+                    double energyNeeded = recipe.getRecipe().output.metadata.getDouble("energy");
+                    
+                    if (this.energy.getEnergy() >= energyNeeded) {
+                         this.energy.useEnergy(energyNeeded);
+                         
+                         // CRITICAL FIX: Wrap consume() in try-catch to prevent NullPointerException
+                         try {
+                             this.inputSlots[i].consume();
+                             
+                             System.out.println("Slot " + i + ": Attempting to add items...");
+                             this.outputSlots[i].add(recipe.getRecipe().output.items);
+                             
+                             ItemStack out = this.outputSlots[i].get();
+                             System.out.println("Slot " + i + " AFTER ADD: " + (out != null ? out.getCount() + "x " + out.getDisplayName() : "null"));
+                             
+                             needsUpdate = true;
+                         } catch (NullPointerException e) {
+                             System.err.println("ERROR in Slot " + i + ": NullPointerException during consume(). Recipe may have changed.");
+                             e.printStackTrace();
+                             // Restore energy since we couldn't complete the operation
+                             this.energy.addEnergy(energyNeeded);
+                         }
+                    }
+                }
+            }
+        }
+        
+        if (needsUpdate) {
+            markDirty();
+            setOverclockRates();
+        }
+    }
+    
+    @Override
+    public void readFromNBT(NBTTagCompound nbt) {
+        super.readFromNBT(nbt);
+        for (int i = 0; i < 12; i++) {
+            if (nbt.hasKey("inputSlot" + i)) {
+                this.inputSlots[i].readFromNbt(nbt.getCompoundTag("inputSlot" + i));
+            }
+            if (nbt.hasKey("outputSlot" + i)) {
+                this.outputSlots[i].readFromNbt(nbt.getCompoundTag("outputSlot" + i));
+            }
+            if (nbt.hasKey("progress" + i)) {
+                this.progressPerSlot[i] = nbt.getDouble("progress" + i);
+            }
+        }
+    }
+
+    @Override
+    public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
+        super.writeToNBT(nbt);
+        for (int i = 0; i < 12; i++) {
+            NBTTagCompound inputTag = new NBTTagCompound();
+            this.inputSlots[i].writeToNbt(inputTag);
+            nbt.setTag("inputSlot" + i, inputTag);
+            
+            NBTTagCompound outputTag = new NBTTagCompound();
+            this.outputSlots[i].writeToNbt(outputTag);
+            nbt.setTag("outputSlot" + i, outputTag);
+            
+            nbt.setDouble("progress" + i, this.progressPerSlot[i]);
+        }
+        return nbt;
     }
 
     @Override
@@ -25,5 +205,13 @@ public class TileEntityImprovedMolecularTransformer extends TileEntityMolecularT
     @Override
     public ic2.core.ContainerBase<? extends TileEntityMolecularTransformer> getGuiContainer(net.minecraft.entity.player.EntityPlayer entityPlayer) {
         return new com.myaddon.iuaddon.container.ContainerImprovedMolecularTransformer(entityPlayer, this);
+    }
+    
+    @Override
+    public void markDirty() {
+        super.markDirty();
+        if (IC2.platform.isSimulating()) {
+            setOverclockRates();
+        }
     }
 }

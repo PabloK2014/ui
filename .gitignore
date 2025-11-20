@@ -1,0 +1,35 @@
+# Gradle
+.gradle/
+build/
+!build/resources/
+!build/libs/
+
+# IntelliJ
+.idea/
+*.iml
+out/
+
+# Eclipse
+.classpath
+.project
+.settings/
+bin/
+
+# Forge-specific
+run/
+logs/
+*.log
+*.mdump
+
+# Local config
+gradle.properties
+local.properties
+
+# macOS
+.DS_Store
+
+# VS Code
+.vscode/
+
+# JARs (но оставь исходники)
+*.jar

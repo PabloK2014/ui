@@ -1,5 +1,7 @@
 {
     "variants": {
-        "normal": { "model": "iu_addon:improved_molecular_transformer" }
+        "normal": {
+            "model": "iu_addon:improved_molecular_transformer"
+        }
     }
 }

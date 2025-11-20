@@ -9,6 +9,16 @@ public class GuiImprovedMolecularTransformer extends GuiMolecularTransformer {
 
     public GuiImprovedMolecularTransformer(ContainerBaseMolecular container1) {
         super(container1);
+        this.xSize = 210;
+        this.ySize = 193;
+    }
+
+    @Override
+    protected void drawGuiContainerBackgroundLayer(float f, int x, int y) {
+        this.bindTexture();
+        int xStart = (this.width - this.xSize) / 2;
+        int yStart = (this.height - this.ySize) / 2;
+        this.drawTexturedModalRect(xStart, yStart, 0, 0, this.xSize, this.ySize);
     }
 
     @Override

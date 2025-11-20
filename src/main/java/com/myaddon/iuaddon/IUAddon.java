@@ -1,8 +1,11 @@
 package com.myaddon.iuaddon;
 
-import net.minecraft.block.Block;
-import net.minecraft.item.Item;
-import net.minecraftforge.event.RegistryEvent;
+import com.myaddon.iuaddon.blocks.BlockImprovedMolecular;
+import ic2.api.event.TeBlockFinalCallEvent;
+import ic2.core.block.BlockTileEntity;
+import ic2.core.block.TeBlockRegistry;
+import net.minecraft.block.material.Material;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
@@ -12,12 +15,13 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.common.registry.GameRegistry;
 
+@Mod.EventBusSubscriber  // КРИТИЧНО: Это нужно для автоматической регистрации @SubscribeEvent методов
 @Mod(
         modid = IUAddon.MOD_ID,
         name = IUAddon.MOD_NAME,
-        version = IUAddon.VERSION
+        version = IUAddon.VERSION,
+        dependencies = "required-after:industrialupgrade"
 )
 public class IUAddon {
 
@@ -27,40 +31,49 @@ public class IUAddon {
 
     @Mod.Instance(MOD_ID)
     public static IUAddon INSTANCE;
+    
+    // Блок будет получен из TeBlockRegistry после регистрации
+    public static BlockTileEntity improvedMolecularTransformer;
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
-        System.out.println("IUADDON: PreInit starting");
-        try {
-            System.out.println("IUADDON: Testing ContainerBaseMolecular loading...");
-            Class<?> containerClazz = Class.forName("com.denfop.container.ContainerBaseMolecular");
-            System.out.println("IUADDON: ContainerBaseMolecular found: " + containerClazz.getName());
+        System.out.println("IU Addon: PreInit started");
+    }
 
-            System.out.println("IUADDON: Testing GuiMolecularTransformer loading...");
-            Class<?> guiClazz = Class.forName("com.denfop.gui.GuiMolecularTransformer");
-            System.out.println("IUADDON: GuiMolecularTransformer found: " + guiClazz.getName());
-            
-            System.out.println("IUADDON: Testing ContainerImprovedMolecularTransformer loading...");
-            Class<?> myContainerClazz = Class.forName("com.myaddon.iuaddon.container.ContainerImprovedMolecularTransformer");
-            System.out.println("IUADDON: My Container found: " + myContainerClazz.getName());
-
-            System.out.println("IUADDON: Testing GuiImprovedMolecularTransformer loading...");
-            Class<?> myGuiClazz = Class.forName("com.myaddon.iuaddon.client.gui.GuiImprovedMolecularTransformer");
-            System.out.println("IUADDON: My GUI found: " + myGuiClazz.getName());
-
-            System.out.println("IUADDON: Testing TileEntityImprovedMolecularTransformer loading...");
-            Class<?> myClazz = Class.forName("com.myaddon.iuaddon.tiles.TileEntityImprovedMolecularTransformer");
-            System.out.println("IUADDON: My Class found: " + myClazz.getName());
-            // Object instance = myClazz.newInstance(); // Skip instantiation for now, just check loading
-            // System.out.println("IUADDON: Instance created: " + instance);
-        } catch (Throwable t) {
-            System.out.println("IUADDON: Failed to load class: " + t.getMessage());
-            t.printStackTrace();
-        }
+    // СТАТИЧЕСКИЙ метод для обработки события IC2
+    @SubscribeEvent
+    public static void onTeBlockFinalCall(TeBlockFinalCallEvent event) {
+        System.out.println("IU Addon: TeBlockFinalCallEvent received!");
+        
+        // Register our block with IC2's TeBlockRegistry
+        TeBlockRegistry.addAll(BlockImprovedMolecular.class, BlockImprovedMolecular.IDENTITY);
+        TeBlockRegistry.setDefaultMaterial(BlockImprovedMolecular.IDENTITY, Material.IRON);
+        TeBlockRegistry.addCreativeRegisterer((list, block, itemblock, tab) -> {
+            if (tab == CreativeTabs.SEARCH || tab == com.denfop.IUCore.SSPTab) {
+                block.getAllTypes().forEach(type -> {
+                    if (type.hasItem()) {
+                        list.add(block.getItemStack(type));
+                    }
+                });
+            }
+        }, BlockImprovedMolecular.IDENTITY);
+        
+        System.out.println("IU Addon: Registered BlockImprovedMolecular with IC2 TeBlockRegistry!");
     }
 
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
+        System.out.println("IU Addon: Init started");
+        
+        // Получаем блок из TeBlockRegistry (IC2 уже создал его)
+        improvedMolecularTransformer = TeBlockRegistry.get(BlockImprovedMolecular.IDENTITY);
+        if (improvedMolecularTransformer != null) {
+            improvedMolecularTransformer.setCreativeTab(com.denfop.IUCore.SSPTab);
+            System.out.println("IU Addon: Retrieved block from TeBlockRegistry successfully!");
+        } else {
+            System.err.println("IU Addon: ERROR - Failed to retrieve block from TeBlockRegistry!");
+        }
+        
         net.minecraftforge.fml.common.network.NetworkRegistry.INSTANCE.registerGuiHandler(this, new GuiHandler());
     }
 
@@ -86,24 +99,6 @@ public class IUAddon {
 
     @Mod.EventHandler
     public void postInit(FMLPostInitializationEvent event) {
-        
-    }
-
-    @Mod.EventBusSubscriber
-    public static class ObjectRegistryHandler {
-        @SubscribeEvent
-        public static void addItems(RegistryEvent.Register<Item> event) {
-            event.getRegistry().register(new net.minecraft.item.ItemBlock(ModBlocks.IMPROVED_MOLECULAR_TRANSFORMER).setRegistryName(ModBlocks.IMPROVED_MOLECULAR_TRANSFORMER.getRegistryName()));
-        }
-
-        @SubscribeEvent
-        public static void addBlocks(RegistryEvent.Register<Block> event) {
-            event.getRegistry().register(ModBlocks.IMPROVED_MOLECULAR_TRANSFORMER);
-            GameRegistry.registerTileEntity(com.myaddon.iuaddon.tiles.TileEntityImprovedMolecularTransformer.class, new net.minecraft.util.ResourceLocation(MOD_ID, "improved_molecular_transformer"));
-        }
-    }
-
-    public static class ModBlocks {
-        public static final Block IMPROVED_MOLECULAR_TRANSFORMER = new com.myaddon.iuaddon.blocks.BlockImprovedMolecularTransformer();
+        System.out.println("IU Addon: Post-initialization complete!");
     }
 }
