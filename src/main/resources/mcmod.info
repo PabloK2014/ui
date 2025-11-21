@@ -2,15 +2,15 @@
 {
   "modid": "iu_addon",
   "name": "Industrial Upgrade Addon",
-  "description": "Adds Improved Molecular Transformer.",
-  "version": "${version}",
-  "mcversion": "${mcversion}",
+  "description": "Addon for Industrial Upgrade with additional modules and machines",
+  "version": "1.0.0",
+  "mcversion": "1.12.2",
   "url": "",
   "updateUrl": "",
-  "authorList": ["Me"],
-  "credits": "",
+  "authorList": ["myaddon"],
+  "credits": "Industrial Upgrade by Denfop",
   "logoFile": "",
   "screenshots": [],
-  "dependencies": []
+  "dependencies": ["industrialupgrade", "mysticalagriculture"]
 }
 ]

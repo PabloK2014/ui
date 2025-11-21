@@ -7,8 +7,10 @@ import ic2.core.block.invslot.InvSlot;
 import ic2.core.IC2;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -207,10 +209,49 @@ public class TileEntityMysticalGrower extends TileEntityMolecularTransformer {
         }
 
         ItemSeed seed = (ItemSeed) seedStack.getItem();
+        String seedRegistryName = seed.getRegistryName().toString();
         
+        // Специальная обработка для семян инферия (tier1, tier2, tier3, tier4, tier5)
+        if (seedRegistryName.contains("inferium_seeds")) {
+            try {
+                // Все эссенции инферия - это один предмет "crafting" с разными meta значениями
+                Item craftingItem = net.minecraftforge.fml.common.registry.ForgeRegistries.ITEMS.getValue(new ResourceLocation("mysticalagriculture", "crafting"));
+                
+                if (craftingItem != null) {
+                    ItemStack essenceStack = null;
+                    
+                    if (seedRegistryName.contains("tier1")) {
+                        essenceStack = new ItemStack(craftingItem, 1, 0); // meta 0 = inferium_essence
+                    } else if (seedRegistryName.contains("tier2")) {
+                        essenceStack = new ItemStack(craftingItem, 1, 1); // meta 1 = prudentium_essence
+                    } else if (seedRegistryName.contains("tier3")) {
+                        essenceStack = new ItemStack(craftingItem, 1, 2); // meta 2 = intermedium_essence
+                    } else if (seedRegistryName.contains("tier4")) {
+                        essenceStack = new ItemStack(craftingItem, 1, 3); // meta 3 = superium_essence
+                    } else if (seedRegistryName.contains("tier5")) {
+                        essenceStack = new ItemStack(craftingItem, 1, 4); // meta 4 = supremium_essence
+                    } else {
+                        // Обычные семена инферия без tier - возвращаем базовую эссенцию
+                        essenceStack = new ItemStack(craftingItem, 1, 0); // meta 0 = inferium_essence
+                    }
+                    
+                    if (essenceStack != null) {
+                        return essenceStack;
+                    }
+                }
+            } catch (Exception e) {
+                // Игнорируем ошибки
+            }
+        }
+        
+        // Обычная обработка для других семян через CropType.Type
         for (com.blakebr0.mysticalagriculture.lib.CropType.Type type : com.blakebr0.mysticalagriculture.lib.CropType.Type.values()) {
-            if (type.getSeed() == seed) {
-                return new ItemStack(type.getCrop());
+            Item typeSeed = type.getSeed();
+            
+            if (typeSeed != null && typeSeed.getRegistryName() != null) {
+                if (seedRegistryName.equals(typeSeed.getRegistryName().toString())) {
+                    return new ItemStack(type.getCrop());
+                }
             }
         }
         

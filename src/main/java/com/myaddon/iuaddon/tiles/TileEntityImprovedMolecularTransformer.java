@@ -62,26 +62,31 @@ public class TileEntityImprovedMolecularTransformer extends TileEntityMolecularT
     @Override
     public void setOverclockRates() {
         // Calculate total energy capacity needed for all slots with valid recipes
-        double totalCapacity = 0;
+        double totalCapacity = 150000; // Minimum base capacity
         
         for (int i = 0; i < 12; i++) {
-            MachineRecipe recipe = this.inputSlots[i].process();
-            this.currentRecipes[i] = recipe;
-            
-            // If recipe exists and output can accept it, add to capacity requirement
-            if (recipe != null && this.outputSlots[i].canAdd(recipe.getRecipe().output.items)) {
-                double energyNeeded = recipe.getRecipe().output.metadata.getDouble("energy");
-                totalCapacity += energyNeeded;
+            try {
+                MachineRecipe recipe = this.inputSlots[i].process();
+                this.currentRecipes[i] = recipe;
+                
+                // If recipe exists and output can accept it, add to capacity requirement
+                if (recipe != null && this.outputSlots[i].canAdd(recipe.getRecipe().output.items)) {
+                    double energyNeeded = recipe.getRecipe().output.metadata.getDouble("energy");
+                    totalCapacity += energyNeeded;
+                }
+            } catch (Exception e) {
+                // Skip problematic slots
+                this.currentRecipes[i] = null;
             }
         }
         
-        // Set capacity dynamically
+        // Set capacity dynamically, but ensure it's never less than base
         if (this.energy != null) {
-            this.energy.setCapacity(totalCapacity);
+            this.energy.setCapacity(Math.max(totalCapacity, 150000));
         }
         
-        // Log capacity changes
-        // System.out.println("TileEntityImprovedMolecularTransformer: setOverclockRates - capacity set to " + totalCapacity);
+        // Log capacity changes for debugging
+        // System.out.println("TileEntityImprovedMolecularTransformer: setOverclockRates - capacity set to " + Math.max(totalCapacity, 150000));
     }
 
     @Override
@@ -108,22 +113,34 @@ public class TileEntityImprovedMolecularTransformer extends TileEntityMolecularT
             MachineRecipe recipe = this.inputSlots[i].process();
             
             if (recipe != null) {
-
                 if (this.outputSlots[i].canAdd(recipe.getRecipe().output.items)) {
                     double energyNeeded = recipe.getRecipe().output.metadata.getDouble("energy");
                     
                     if (this.energy.getEnergy() >= energyNeeded) {
-                         this.energy.useEnergy(energyNeeded);
-                         
-                         // CRITICAL FIX: Wrap consume() in try-catch to prevent NullPointerException
-                         try {
-                             this.inputSlots[i].consume();
-                             this.outputSlots[i].add(recipe.getRecipe().output.items);
-                             needsUpdate = true;
-                         } catch (NullPointerException e) {
-                             // Silently restore energy and continue
-                             this.energy.addEnergy(energyNeeded);
-                         }
+                        // CRITICAL FIX: Check everything BEFORE consuming anything
+                        try {
+                            // Validate input slot has items to consume
+                            if (this.inputSlots[i].isEmpty()) {
+                                continue; // Skip if no input
+                            }
+                            
+                            // Validate output can actually accept the items
+                            if (!this.outputSlots[i].canAdd(recipe.getRecipe().output.items)) {
+                                continue; // Skip if output full
+                            }
+                            
+                            // All checks passed - now consume energy and process
+                            this.energy.useEnergy(energyNeeded);
+                            this.inputSlots[i].consume();
+                            this.outputSlots[i].add(recipe.getRecipe().output.items);
+                            needsUpdate = true;
+                            
+                        } catch (Exception e) {
+                            // Log the error for debugging
+                            System.err.println("Error processing slot " + i + " in ImprovedMolecularTransformer: " + e.getMessage());
+                            e.printStackTrace();
+                            // Don't restore energy here - if we got here, something is seriously wrong
+                        }
                     }
                 }
             }
@@ -138,32 +155,40 @@ public class TileEntityImprovedMolecularTransformer extends TileEntityMolecularT
     @Override
     public void readFromNBT(NBTTagCompound nbt) {
         super.readFromNBT(nbt);
-        for (int i = 0; i < 12; i++) {
-            if (nbt.hasKey("inputSlot" + i)) {
-                this.inputSlots[i].readFromNbt(nbt.getCompoundTag("inputSlot" + i));
+        try {
+            for (int i = 0; i < 12; i++) {
+                if (nbt.hasKey("inputSlot" + i)) {
+                    this.inputSlots[i].readFromNbt(nbt.getCompoundTag("inputSlot" + i));
+                }
+                if (nbt.hasKey("outputSlot" + i)) {
+                    this.outputSlots[i].readFromNbt(nbt.getCompoundTag("outputSlot" + i));
+                }
+                if (nbt.hasKey("progress" + i)) {
+                    this.progressPerSlot[i] = nbt.getDouble("progress" + i);
+                }
             }
-            if (nbt.hasKey("outputSlot" + i)) {
-                this.outputSlots[i].readFromNbt(nbt.getCompoundTag("outputSlot" + i));
-            }
-            if (nbt.hasKey("progress" + i)) {
-                this.progressPerSlot[i] = nbt.getDouble("progress" + i);
-            }
+        } catch (Exception e) {
+            System.err.println("Error reading NBT for ImprovedMolecularTransformer: " + e.getMessage());
         }
     }
 
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
         super.writeToNBT(nbt);
-        for (int i = 0; i < 12; i++) {
-            NBTTagCompound inputTag = new NBTTagCompound();
-            this.inputSlots[i].writeToNbt(inputTag);
-            nbt.setTag("inputSlot" + i, inputTag);
-            
-            NBTTagCompound outputTag = new NBTTagCompound();
-            this.outputSlots[i].writeToNbt(outputTag);
-            nbt.setTag("outputSlot" + i, outputTag);
-            
-            nbt.setDouble("progress" + i, this.progressPerSlot[i]);
+        try {
+            for (int i = 0; i < 12; i++) {
+                NBTTagCompound inputTag = new NBTTagCompound();
+                this.inputSlots[i].writeToNbt(inputTag);
+                nbt.setTag("inputSlot" + i, inputTag);
+                
+                NBTTagCompound outputTag = new NBTTagCompound();
+                this.outputSlots[i].writeToNbt(outputTag);
+                nbt.setTag("outputSlot" + i, outputTag);
+                
+                nbt.setDouble("progress" + i, this.progressPerSlot[i]);
+            }
+        } catch (Exception e) {
+            System.err.println("Error writing NBT for ImprovedMolecularTransformer: " + e.getMessage());
         }
         return nbt;
     }

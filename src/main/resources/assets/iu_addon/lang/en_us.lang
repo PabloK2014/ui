@@ -1,2 +1,16 @@
-tile.mystical_grower.name=Mystical Grower
-tile.improved_molecular.name=Improved Molecular Transformer
+# Items (IU style)
+iu_addon.water_generator_module.name=Water Generator Module
+
+# Alternative item naming
+item.iu_addon.water_generator_module.name=Water Generator Module
+
+# Blocks (IC2 style)
+iu_addon.mystical_grower.mystical_grower=Mystical Grower
+iu_addon.improved_molecular.improved_molecular=Improved Molecular Transformer
+
+# Alternative block naming
+tile.iu_addon.mystical_grower.name=Mystical Grower
+tile.iu_addon.improved_molecular.name=Improved Molecular Transformer
+
+# GUI
+gui.iu_addon.mystical_grower.name=Mystical Grower

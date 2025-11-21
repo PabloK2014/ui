@@ -1,2 +1,16 @@
-tile.mystical_grower.name=Мистический Выращиватель
-tile.improved_molecular.name=Улучшенный Молекулярный Преобразователь
+# Items (IU style)
+iu_addon.water_generator_module.name=Модуль генерации воды
+
+# Alternative item naming
+item.iu_addon.water_generator_module.name=Модуль генерации воды
+
+# Blocks (IC2 style)
+iu_addon.mystical_grower.mystical_grower=Мистический Ростител
+iu_addon.improved_molecular.improved_molecular=Улучшенный Молекулярный Преобразователь
+
+# Alternative block naming
+tile.iu_addon.mystical_grower.name=Мистический Ростител
+tile.iu_addon.improved_molecular.name=Улучшенный Молекулярный Преобразователь
+
+# GUI
+gui.iu_addon.mystical_grower.name=Мистический Ростител

@@ -1,14 +1,36 @@
 {
-    "forge_marker": 1,
-    "defaults": {
+  "forge_marker": 1,
+  "variants": {
+    "type": {
+      "improved_molecular": {
         "model": "iu_addon:block/improved_molecular_transformer"
+      },
+      "improved_molecular_active": {
+        "model": "iu_addon:block/improved_molecular_transformer"
+      }
     },
-    "variants": {
-        "normal": [
-            {}
-        ],
-        "inventory": [
-            {}
-        ]
-    }
+    "facing": {
+      "down": {
+        "x": 90
+      },
+      "up": {
+        "x": 270
+      },
+      "north": {
+        "transform": "forge:default-block"
+      },
+      "south": {
+        "y": 180
+      },
+      "west": {
+        "y": 270
+      },
+      "east": {
+        "y": 90
+      }
+    },
+    "inventory": [
+      {}
+    ]
+  }
 }

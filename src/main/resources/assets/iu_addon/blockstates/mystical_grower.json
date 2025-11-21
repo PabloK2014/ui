@@ -1,14 +1,36 @@
 {
-    "forge_marker": 1,
-    "defaults": {
+  "forge_marker": 1,
+  "variants": {
+    "type": {
+      "mystical_grower": {
         "model": "iu_addon:block/mystical_grower"
+      },
+      "mystical_grower_active": {
+        "model": "iu_addon:block/mystical_grower"
+      }
     },
-    "variants": {
-        "normal": [
-            {}
-        ],
-        "inventory": [
-            {}
-        ]
-    }
+    "facing": {
+      "down": {
+        "x": 90
+      },
+      "up": {
+        "x": 270
+      },
+      "north": {
+        "transform": "forge:default-block"
+      },
+      "south": {
+        "y": 180
+      },
+      "west": {
+        "y": 270
+      },
+      "east": {
+        "y": 90
+      }
+    },
+    "inventory": [
+      {}
+    ]
+  }
 }
