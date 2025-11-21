@@ -9,7 +9,7 @@ public class GuiImprovedMolecularTransformer extends GuiMolecularTransformer {
 
     public GuiImprovedMolecularTransformer(ContainerBaseMolecular container1) {
         super(container1);
-        this.xSize = 210;
+        this.xSize = 220;  // Changed from 210 to 220 to match texture width
         this.ySize = 193;
     }
 
@@ -18,6 +18,8 @@ public class GuiImprovedMolecularTransformer extends GuiMolecularTransformer {
         this.bindTexture();
         int xStart = (this.width - this.xSize) / 2;
         int yStart = (this.height - this.ySize) / 2;
+        
+        // Draw main GUI background
         this.drawTexturedModalRect(xStart, yStart, 0, 0, this.xSize, this.ySize);
     }
 

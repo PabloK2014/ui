@@ -1,0 +1,93 @@
+> Task :clean
+> Task :extractForgeUserdev SKIPPED
+> Task :extractMcpData SKIPPED
+> Task :extractDependencyATs SKIPPED
+> Task :generateForgeSrgMappings SKIPPED
+> Task :downloadLauncherAllVersionsManifest SKIPPED
+> Task :downloadFernflower SKIPPED
+> Task :processApiResources NO-SOURCE
+> Task :injectTags
+> Task :compileInjectedTagsJava NO-SOURCE
+> Task :extractNatives2 UP-TO-DATE
+> Task :createMcLauncherFiles
+> Task :compileMcLauncherJava
+> Task :processInjectedTagsResources NO-SOURCE
+> Task :injectedTagsClasses UP-TO-DATE
+> Task :processMcLauncherResources NO-SOURCE
+> Task :mcLauncherClasses
+
+> Task :downloadLauncherVersionManifest
+Download https://piston-meta.mojang.com/v1/packages/832d95b9f40699d4961394dcf6cf549e65f15dc5/1.12.2.json
+Server response does not include an entity tag (ETag).
+
+> Task :downloadVanillaJars SKIPPED
+> Task :mergeVanillaSidedJars
+
+> Task :deobfuscateMergedJarToSrg
+Applying SpecialSource
+Loading 1 AccessTransformers
+Renamed 0 AT entries
+Applying Exceptor
+Cleaning up generated debuginfo
+
+> Task :decompileSrgJar
+Using cached decompiled jar from C:\Users\BOB\.gradle\caches\retro_futura_gradle\fernflower-cache\1.0.342-eb8d36e1a6e380af6020fe16beaddcdce174091f501f488867bd48f194f50657.jar
+
+> Task :cleanupDecompSrgJar
+Fixup stage 1 - applying FF patches
+  Stage 1 took 137 ms
+Fixup stage 2 - applying MCP patches
+  Stage 2 took 80 ms
+Fixup stage 3 - applying MCP cleanup
+  Stage 3 took 1356 ms
+Fixup stage 4 - injecting package-info
+  Injected 119 package-infos
+  Stage 4 took 3 ms
+Saving the fixed-up jar
+
+> Task :patchDecompiledJar
+Patching sources: 1 patch archives, 2 injection directories
+Applied 525 patches
+
+> Task :remapDecompiledJar
+Applied 0 missing generics
+
+> Task :decompressDecompiledSources
+
+> Task :compilePatchedMcJava
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: Some input files use unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+
+> Task :processPatchedMcResources
+> Task :patchedMcClasses
+> Task :compileApiJava NO-SOURCE
+> Task :apiClasses UP-TO-DATE
+
+> Task :compileJava FAILED
+D:\ae2\iu_addon\src\main\java\com\myaddon\iuaddon\tiles\TileEntityMysticalGrower.java:21: error: com.myaddon.iuaddon.tiles.TileEntityMysticalGrower is not abstract and does not override abstract method update() in net.minecraft.util.ITickable
+public class TileEntityMysticalGrower extends TileEntityInventory 
+       ^
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+1 error
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':compileJava'.
+> Compilation failed; see the compiler error output for details.
+
+* Try:
+> Run with --info option to get more log output.
+> Run with --scan to get full insights.
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.5/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD FAILED in 36s
+16 actionable tasks: 15 executed, 1 up-to-date

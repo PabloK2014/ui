@@ -1,11 +1,18 @@
 package com.myaddon.iuaddon;
 
 import com.myaddon.iuaddon.blocks.BlockImprovedMolecular;
+import com.myaddon.iuaddon.blocks.BlockMysticalGrower;
 import ic2.api.event.TeBlockFinalCallEvent;
 import ic2.core.block.BlockTileEntity;
 import ic2.core.block.TeBlockRegistry;
 import net.minecraft.block.material.Material;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.item.ItemStack;
+
+import com.denfop.IUItem;
+import com.denfop.Ic2Items;
+import ic2.api.recipe.Recipes;
+import net.minecraftforge.oredict.OreDictionary;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
@@ -21,7 +28,7 @@ import net.minecraft.world.World;
         modid = IUAddon.MOD_ID,
         name = IUAddon.MOD_NAME,
         version = IUAddon.VERSION,
-        dependencies = "required-after:industrialupgrade"
+        dependencies = "required-after:industrialupgrade;required-after:mysticalagriculture"
 )
 public class IUAddon {
 
@@ -34,6 +41,7 @@ public class IUAddon {
     
     // Блок будет получен из TeBlockRegistry после регистрации
     public static BlockTileEntity improvedMolecularTransformer;
+    public static BlockTileEntity mysticalGrower;
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
@@ -45,7 +53,7 @@ public class IUAddon {
     public static void onTeBlockFinalCall(TeBlockFinalCallEvent event) {
         System.out.println("IU Addon: TeBlockFinalCallEvent received!");
         
-        // Register our block with IC2's TeBlockRegistry
+        // Register Improved Molecular Transformer
         TeBlockRegistry.addAll(BlockImprovedMolecular.class, BlockImprovedMolecular.IDENTITY);
         TeBlockRegistry.setDefaultMaterial(BlockImprovedMolecular.IDENTITY, Material.IRON);
         TeBlockRegistry.addCreativeRegisterer((list, block, itemblock, tab) -> {
@@ -58,23 +66,47 @@ public class IUAddon {
             }
         }, BlockImprovedMolecular.IDENTITY);
         
-        System.out.println("IU Addon: Registered BlockImprovedMolecular with IC2 TeBlockRegistry!");
+        // Register Mystical Grower
+        TeBlockRegistry.addAll(BlockMysticalGrower.class, BlockMysticalGrower.IDENTITY);
+        TeBlockRegistry.setDefaultMaterial(BlockMysticalGrower.IDENTITY, Material.IRON);
+        TeBlockRegistry.addCreativeRegisterer((list, block, itemblock, tab) -> {
+            if (tab == CreativeTabs.SEARCH || tab == com.denfop.IUCore.SSPTab) {
+                block.getAllTypes().forEach(type -> {
+                    if (type.hasItem()) {
+                        list.add(block.getItemStack(type));
+                    }
+                });
+            }
+        }, BlockMysticalGrower.IDENTITY);
+        
+        System.out.println("IU Addon: Registered blocks with IC2 TeBlockRegistry!");
     }
 
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
         System.out.println("IU Addon: Init started");
         
-        // Получаем блок из TeBlockRegistry (IC2 уже создал его)
+        // Получаем блоки из TeBlockRegistry (IC2 уже создал их)
         improvedMolecularTransformer = TeBlockRegistry.get(BlockImprovedMolecular.IDENTITY);
         if (improvedMolecularTransformer != null) {
             improvedMolecularTransformer.setCreativeTab(com.denfop.IUCore.SSPTab);
-            System.out.println("IU Addon: Retrieved block from TeBlockRegistry successfully!");
+            System.out.println("IU Addon: Retrieved Improved Molecular Transformer successfully!");
         } else {
-            System.err.println("IU Addon: ERROR - Failed to retrieve block from TeBlockRegistry!");
+            System.err.println("IU Addon: ERROR - Failed to retrieve Improved Molecular Transformer!");
+        }
+        
+        mysticalGrower = TeBlockRegistry.get(BlockMysticalGrower.IDENTITY);
+        if (mysticalGrower != null) {
+            mysticalGrower.setCreativeTab(com.denfop.IUCore.SSPTab);
+            System.out.println("IU Addon: Retrieved Mystical Grower successfully!");
+        } else {
+            System.err.println("IU Addon: ERROR - Failed to retrieve Mystical Grower!");
         }
         
         net.minecraftforge.fml.common.network.NetworkRegistry.INSTANCE.registerGuiHandler(this, new GuiHandler());
+        
+        // Добавляем крафты
+        addRecipes();
     }
 
     public static class GuiHandler implements net.minecraftforge.fml.common.network.IGuiHandler {
@@ -83,6 +115,9 @@ public class IUAddon {
             TileEntity te = world.getTileEntity(new BlockPos(x, y, z));
             if (te instanceof com.myaddon.iuaddon.tiles.TileEntityImprovedMolecularTransformer) {
                 return new com.myaddon.iuaddon.container.ContainerImprovedMolecularTransformer(player, (com.myaddon.iuaddon.tiles.TileEntityImprovedMolecularTransformer) te);
+            }
+            if (te instanceof com.myaddon.iuaddon.tiles.TileEntityMysticalGrower) {
+                return new com.myaddon.iuaddon.container.ContainerMysticalGrower(player, (com.myaddon.iuaddon.tiles.TileEntityMysticalGrower) te);
             }
             return null;
         }
@@ -93,6 +128,9 @@ public class IUAddon {
             if (te instanceof com.myaddon.iuaddon.tiles.TileEntityImprovedMolecularTransformer) {
                 return new com.myaddon.iuaddon.client.gui.GuiImprovedMolecularTransformer(new com.myaddon.iuaddon.container.ContainerImprovedMolecularTransformer(player, (com.myaddon.iuaddon.tiles.TileEntityImprovedMolecularTransformer) te));
             }
+            if (te instanceof com.myaddon.iuaddon.tiles.TileEntityMysticalGrower) {
+                return new com.myaddon.iuaddon.client.gui.GuiMysticalGrower(new com.myaddon.iuaddon.container.ContainerMysticalGrower(player, (com.myaddon.iuaddon.tiles.TileEntityMysticalGrower) te));
+            }
             return null;
         }
     }
@@ -100,5 +138,45 @@ public class IUAddon {
     @Mod.EventHandler
     public void postInit(FMLPostInitializationEvent event) {
         System.out.println("IU Addon: Post-initialization complete!");
+    }
+    
+    private void addRecipes() {
+        System.out.println("IU Addon: Adding recipes...");
+        
+        // Крафт Мистического Ростителя
+        // Центр: улучшенный блок механизма (IUItem.basemachine, meta 3)
+        // По бокам: 4 эссенции супремиума
+        // Остальные слоты: 2 сжатых углепластика и 2 улучшенных электросхемы
+        if (mysticalGrower != null) {
+            Recipes.advRecipes.addRecipe(mysticalGrower.getItemStack(BlockMysticalGrower.mystical_grower),
+                "ABA",
+                "CDC", 
+                "ABA",
+                'A', OreDictionary.getOres("essenceSupremium"), // Эссенция супремиума по бокам
+                'B', new ItemStack(IUItem.compresscarbon), // Сжатый углепластик сверху и снизу
+                'C', Ic2Items.advancedCircuit, // Улучшенные электросхемы слева и справа
+                'D', new ItemStack(IUItem.basemachine, 1, 3) // Улучшенный блок механизма в центре
+            );
+            System.out.println("IU Addon: Added Mystical Grower recipe");
+        }
+        
+        // Крафт Улучшенного Молекулярного Преобразователя
+        // Основа: обычный молекулярный трансформер в центре
+        // Углы: 4 иридиевые пластины
+        // Стороны: 2 квантовые схемы сверху/снизу, 2 сжатых углепластика слева/справа
+        if (improvedMolecularTransformer != null) {
+            Recipes.advRecipes.addRecipe(improvedMolecularTransformer.getItemStack(BlockImprovedMolecular.improved_molecular),
+                "ABA",
+                "CDC",
+                "ABA", 
+                'A', Ic2Items.iridiumPlate, // Иридиевые пластины по углам
+                'B', IUItem.QuantumItems9, // Квантовые схемы сверху и снизу
+                'C', new ItemStack(IUItem.compresscarbon), // Сжатый углепластик слева и справа
+                'D', new ItemStack(IUItem.blockmolecular) // Обычный молекулярный трансформер в центре
+            );
+            System.out.println("IU Addon: Added Improved Molecular Transformer recipe");
+        }
+        
+        System.out.println("IU Addon: All recipes added successfully!");
     }
 }

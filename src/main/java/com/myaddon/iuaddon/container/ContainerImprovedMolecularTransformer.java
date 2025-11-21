@@ -40,15 +40,20 @@ public class ContainerImprovedMolecularTransformer extends ContainerBaseMolecula
             }
         }
 
-        // Player inventory
+        // Player inventory (main 3 rows)
+        // Row 1: Y=98, Row 2: Y=119, Row 3: Y=140
+        // Slots: 18, 39, 60, 81, 102, 123, 144, 165, 186 (step = 21px)
         for (int i = 0; i < 3; ++i) {
             for (int k = 0; k < 9; ++k) {
                 this.addSlotToContainer(
-                        new Slot(entityPlayer.inventory, k + i * 9 + 9, 8 + k * 18, 84 + i * 18 + 15)); // Adjusted Y
+                        new Slot(entityPlayer.inventory, k + i * 9 + 9, 18 + k * 21, 98 + i * 21));
             }
         }
+        
+        // Player hotbar (bottom row)
+        // Y = 165
         for (int j = 0; j < 9; ++j) {
-            this.addSlotToContainer(new Slot(entityPlayer.inventory, j, 8 + j * 18, 142 + 15)); // Adjusted Y
+            this.addSlotToContainer(new Slot(entityPlayer.inventory, j, 18 + j * 21, 165));
         }
     }
 }

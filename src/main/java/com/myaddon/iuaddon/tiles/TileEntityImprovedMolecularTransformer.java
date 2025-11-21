@@ -101,28 +101,13 @@ public class TileEntityImprovedMolecularTransformer extends TileEntityMolecularT
         
         boolean needsUpdate = false;
         
-        // 3. Debug logging (throttle)
-        if (this.world.getTotalWorldTime() % 20 == 0) {
-             System.out.println("TileEntityImprovedMolecularTransformer: Energy = " + this.energy.getEnergy() + " / " + this.energy.getCapacity());
-        }
+        // Energy tracking removed for cleaner logs
 
         // 4. Process recipes for all 12 slots
         for (int i = 0; i < 12; i++) {
             MachineRecipe recipe = this.inputSlots[i].process();
             
             if (recipe != null) {
-                 if (this.world.getTotalWorldTime() % 20 == 0) {
-                     System.out.println("Slot " + i + ": Recipe found! Output: " + recipe.getRecipe().output.items.get(0).getDisplayName());
-                     System.out.println("Energy needed: " + recipe.getRecipe().output.metadata.getDouble("energy"));
-                     
-                     ItemStack currentOutput = this.outputSlots[i].get();
-                     if (currentOutput != null && !currentOutput.isEmpty()) {
-                         System.out.println("Slot " + i + " output has: " + currentOutput.getCount() + "x " + currentOutput.getDisplayName());
-                     } else {
-                         System.out.println("Slot " + i + " output is EMPTY");
-                     }
-                     System.out.println("Slot " + i + " canAdd: " + this.outputSlots[i].canAdd(recipe.getRecipe().output.items));
-                 }
 
                 if (this.outputSlots[i].canAdd(recipe.getRecipe().output.items)) {
                     double energyNeeded = recipe.getRecipe().output.metadata.getDouble("energy");
@@ -133,18 +118,10 @@ public class TileEntityImprovedMolecularTransformer extends TileEntityMolecularT
                          // CRITICAL FIX: Wrap consume() in try-catch to prevent NullPointerException
                          try {
                              this.inputSlots[i].consume();
-                             
-                             System.out.println("Slot " + i + ": Attempting to add items...");
                              this.outputSlots[i].add(recipe.getRecipe().output.items);
-                             
-                             ItemStack out = this.outputSlots[i].get();
-                             System.out.println("Slot " + i + " AFTER ADD: " + (out != null ? out.getCount() + "x " + out.getDisplayName() : "null"));
-                             
                              needsUpdate = true;
                          } catch (NullPointerException e) {
-                             System.err.println("ERROR in Slot " + i + ": NullPointerException during consume(). Recipe may have changed.");
-                             e.printStackTrace();
-                             // Restore energy since we couldn't complete the operation
+                             // Silently restore energy and continue
                              this.energy.addEnergy(energyNeeded);
                          }
                     }
