@@ -4,7 +4,10 @@ import com.denfop.container.ContainerBaseMolecular;
 import com.denfop.gui.GuiMolecularTransformer;
 import com.myaddon.iuaddon.IUAddon;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
+@SideOnly(Side.CLIENT)
 public class GuiImprovedMolecularTransformer extends GuiMolecularTransformer {
 
     public GuiImprovedMolecularTransformer(ContainerBaseMolecular container1) {

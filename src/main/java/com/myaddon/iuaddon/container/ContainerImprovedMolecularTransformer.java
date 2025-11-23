@@ -1,59 +1,55 @@
 package com.myaddon.iuaddon.container;
 
 import com.denfop.container.ContainerBaseMolecular;
-import com.denfop.tiles.base.TileEntityMolecularTransformer;
 import com.myaddon.iuaddon.tiles.TileEntityImprovedMolecularTransformer;
 import ic2.core.slot.SlotInvSlot;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Slot;
 
+import java.util.List;
+
 public class ContainerImprovedMolecularTransformer extends ContainerBaseMolecular {
 
-    public ContainerImprovedMolecularTransformer(EntityPlayer entityPlayer, TileEntityMolecularTransformer tileEntity1) {
-        super(entityPlayer, tileEntity1);
-        
-        // Clear existing slots added by super (if possible, otherwise we might have duplicates or need to ignore them)
-        // Since we can't easily clear private lists in super, we might have issues. 
-        // However, ContainerBase usually adds slots to 'inventorySlots' list which is protected.
+    public ContainerImprovedMolecularTransformer(EntityPlayer entityPlayer, TileEntityImprovedMolecularTransformer tileEntity1) {
+        super(entityPlayer, tileEntity1); // This adds default slots
+
+        // Clear default slots added by super
         this.inventorySlots.clear();
         this.inventoryItemStacks.clear();
 
-        TileEntityImprovedMolecularTransformer te = (TileEntityImprovedMolecularTransformer) tileEntity1;
-
-        // Input slots (4x3 grid)
-        // Start X: 13 (12 + 1), Start Y: 17 (16 + 1)
-        // Slot size 18, Gap 3 -> Step 21
-        for (int row = 0; row < 3; row++) {
-            for (int col = 0; col < 4; col++) {
-                int index = row * 4 + col;
-                addSlotToContainer(new SlotInvSlot(te.inputSlots[index], 0, 13 + col * 21, 17 + row * 21));
-            }
+        // Re-add our custom slots
+        
+        // Input Slots (12) - 4 columns x 3 rows
+        // Start X: 8, Start Y: 20 (Adjusted to be more standard?)
+        // User didn't give coords, sticking to previous: 20, 20
+        for (int i = 0; i < 12; i++) {
+            int x = 20 + (i % 4) * 18;
+            int y = 20 + (i / 4) * 18;
+            addSlotToContainer(new SlotInvSlot(tileEntity1.inputSlot, i, x, y));
         }
 
-        // Output slots (4x3 grid)
-        // Input ends at X = 13 + 3*21 + 18 = 94.
-        // Gap 34 pixels. Start X = 94 + 34 = 128.
-        for (int row = 0; row < 3; row++) {
-            for (int col = 0; col < 4; col++) {
-                int index = row * 4 + col;
-                addSlotToContainer(new SlotInvSlot(te.outputSlots[index], 0, 128 + col * 21, 17 + row * 21));
-            }
+        // Output Slots (12) - 4 columns x 3 rows
+        // Start X: 110, Start Y: 20
+        for (int i = 0; i < 12; i++) {
+            int x = 110 + (i % 4) * 18;
+            int y = 20 + (i / 4) * 18;
+            addSlotToContainer(new SlotInvSlot(tileEntity1.outputSlot, i, x, y));
         }
 
-        // Player inventory (main 3 rows)
-        // Row 1: Y=98, Row 2: Y=119, Row 3: Y=140
-        // Slots: 18, 39, 60, 81, 102, 123, 144, 165, 186 (step = 21px)
+        // Player Inventory
         for (int i = 0; i < 3; ++i) {
             for (int k = 0; k < 9; ++k) {
                 this.addSlotToContainer(
-                        new Slot(entityPlayer.inventory, k + i * 9 + 9, 18 + k * 21, 98 + i * 21));
+                        new Slot(entityPlayer.inventory, k + i * 9 + 9, 18 + k * 18, 111 + i * 18)); // Adjusted Y to 111 (193 - 82)
             }
         }
-        
-        // Player hotbar (bottom row)
-        // Y = 165
         for (int j = 0; j < 9; ++j) {
-            this.addSlotToContainer(new Slot(entityPlayer.inventory, j, 18 + j * 21, 165));
+            this.addSlotToContainer(new Slot(entityPlayer.inventory, j, 18 + j * 18, 169)); // Adjusted Y to 169
         }
+    }
+    
+    @Override
+    public boolean canInteractWith(EntityPlayer player) {
+        return ((TileEntityImprovedMolecularTransformer)this.base).isUsableByPlayer(player);
     }
 }

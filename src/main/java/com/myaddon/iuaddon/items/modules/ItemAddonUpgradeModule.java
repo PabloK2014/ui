@@ -8,6 +8,7 @@ import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.relauncher.Side;
@@ -73,8 +74,64 @@ public class ItemAddonUpgradeModule extends Item implements IUpgradeItem {
 
     @Override
     public boolean onTick(ItemStack stack, IUpgradableBlock machine) {
-        // Логика генерации воды будет в EventHandler
-        return false;
+        if (machine instanceof TileEntity) {
+            TileEntity tile = (TileEntity) machine;
+            
+            // Try to find fluid tank via reflection or known interfaces
+            try {
+                // Check for standard 'fluidTank' field (common in IC2 and IU)
+                java.lang.reflect.Field fluidTankField = null;
+                try {
+                    fluidTankField = tile.getClass().getField("fluidTank");
+                } catch (NoSuchFieldException e) {
+                    try {
+                        fluidTankField = tile.getClass().getDeclaredField("fluidTank");
+                    } catch (NoSuchFieldException e2) {
+                        // Field not found
+                    }
+                }
+
+                if (fluidTankField != null) {
+                    fluidTankField.setAccessible(true);
+                    Object tankObj = fluidTankField.get(tile);
+
+                    if (tankObj instanceof net.minecraftforge.fluids.FluidTank) {
+                        processTank((net.minecraftforge.fluids.FluidTank) tankObj);
+                    } else if (tankObj instanceof net.minecraftforge.fluids.FluidTank[]) {
+                        for (net.minecraftforge.fluids.FluidTank tank : (net.minecraftforge.fluids.FluidTank[]) tankObj) {
+                            processTank(tank);
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                // Ignore errors to prevent crash
+            }
+        }
+        return true; // Keep processing
+    }
+
+    private void processTank(net.minecraftforge.fluids.FluidTank tank) {
+        if (tank == null) return;
+        
+        // Check if it's water or empty
+        if (tank.getFluid() == null || tank.getFluid().getFluid() == net.minecraftforge.fluids.FluidRegistry.WATER) {
+            
+            // 1. Force Capacity to 300,000 (300 buckets)
+            if (tank.getCapacity() < 300000) {
+                try {
+                    java.lang.reflect.Field capacityField = net.minecraftforge.fluids.FluidTank.class.getDeclaredField("capacity");
+                    capacityField.setAccessible(true);
+                    capacityField.setInt(tank, 300000);
+                } catch (Exception e) {
+                    // Ignore
+                }
+            }
+
+            // 2. Instant Fill
+            if (tank.getFluidAmount() < tank.getCapacity()) {
+                tank.setFluid(new net.minecraftforge.fluids.FluidStack(net.minecraftforge.fluids.FluidRegistry.WATER, tank.getCapacity()));
+            }
+        }
     }
 
     @Override

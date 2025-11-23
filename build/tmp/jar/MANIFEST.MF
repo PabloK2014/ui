@@ -3,7 +3,7 @@ Implementation-Title: iu_addon
 Implementation-Version: 1.0.1
 Specification-Vendor: myaddon
 Specification-Title: iu_addon
-Implementation-Timestamp: 2025-11-21T21:14:47+0300
+Implementation-Timestamp: 2025-11-23T11:59:32+0300
 Specification-Version: 1
 Implementation-Vendor: myaddon
 

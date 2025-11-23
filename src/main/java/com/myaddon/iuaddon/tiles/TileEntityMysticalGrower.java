@@ -156,7 +156,7 @@ public class TileEntityMysticalGrower extends TileEntityMolecularTransformer {
     }
     
     private boolean isMASeed(ItemStack stack) {
-        return !stack.isEmpty() && stack.getItem() instanceof ItemSeed;
+        return !stack.isEmpty() && stack.getItem() instanceof net.minecraft.item.ItemSeeds;
     }
     
     private boolean isEssenceBlock(ItemStack stack) {
@@ -204,12 +204,12 @@ public class TileEntityMysticalGrower extends TileEntityMolecularTransformer {
     }
     
     private ItemStack getEssenceForSeed(ItemStack seedStack) {
-        if (seedStack.isEmpty() || !(seedStack.getItem() instanceof ItemSeed)) {
+        if (seedStack.isEmpty() || !(seedStack.getItem() instanceof net.minecraft.item.ItemSeeds)) {
             return ItemStack.EMPTY;
         }
 
-        ItemSeed seed = (ItemSeed) seedStack.getItem();
-        String seedRegistryName = seed.getRegistryName().toString();
+        net.minecraft.item.ItemSeeds seedItem = (net.minecraft.item.ItemSeeds) seedStack.getItem();
+        String seedRegistryName = seedItem.getRegistryName().toString();
         
         // Специальная обработка для семян инферия (tier1, tier2, tier3, tier4, tier5)
         if (seedRegistryName.contains("inferium_seeds")) {
@@ -240,17 +240,53 @@ public class TileEntityMysticalGrower extends TileEntityMolecularTransformer {
                     }
                 }
             } catch (Exception e) {
-                // Игнорируем ошибки
+                // Ignore errors
             }
         }
         
-        // Обычная обработка для других семян через CropType.Type
-        for (com.blakebr0.mysticalagriculture.lib.CropType.Type type : com.blakebr0.mysticalagriculture.lib.CropType.Type.values()) {
-            Item typeSeed = type.getSeed();
+        // Generic handling via Crop Block
+        try {
+            net.minecraft.block.Block cropBlock = seedItem.getPlant(null, null).getBlock();
             
-            if (typeSeed != null && typeSeed.getRegistryName() != null) {
-                if (seedRegistryName.equals(typeSeed.getRegistryName().toString())) {
-                    return new ItemStack(type.getCrop());
+            // Try Reflection for getCrop() (works for BlockCrops, BlockMysticalCrop, and others)
+            // We use reflection to bypass "protected" access if necessary and to support unknown subclasses
+            try {
+                java.lang.reflect.Method getCropMethod = null;
+                Class<?> clazz = cropBlock.getClass();
+                
+                // Search for getCrop in the class hierarchy
+                while (clazz != null && getCropMethod == null) {
+                    try {
+                        getCropMethod = clazz.getDeclaredMethod("getCrop");
+                    } catch (NoSuchMethodException e) {
+                        clazz = clazz.getSuperclass();
+                    }
+                }
+                
+                if (getCropMethod != null) {
+                    getCropMethod.setAccessible(true);
+                    Object result = getCropMethod.invoke(cropBlock);
+                    if (result instanceof Item) {
+                        return new ItemStack((Item) result);
+                    }
+                }
+            } catch (Exception e) {
+                // Reflection failed
+            }
+        } catch (Exception e) {
+            // Error getting plant
+        }
+        
+        // Fallback: Oredict based on registry name?
+        // Or existing CropType logic if applicable (only for MA seeds)
+        if (seedItem instanceof ItemSeed) {
+            for (com.blakebr0.mysticalagriculture.lib.CropType.Type type : com.blakebr0.mysticalagriculture.lib.CropType.Type.values()) {
+                Item typeSeed = type.getSeed();
+                
+                if (typeSeed != null && typeSeed.getRegistryName() != null) {
+                    if (seedRegistryName.equals(typeSeed.getRegistryName().toString())) {
+                        return new ItemStack(type.getCrop());
+                    }
                 }
             }
         }
