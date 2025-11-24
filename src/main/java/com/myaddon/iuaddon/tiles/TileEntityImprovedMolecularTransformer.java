@@ -21,6 +21,10 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.minecraftforge.common.MinecraftForge;
+import ic2.api.energy.event.EnergyTileLoadEvent;
+import ic2.api.energy.event.EnergyTileUnloadEvent;
+
 public class TileEntityImprovedMolecularTransformer extends TileEntityMolecularTransformer {
 
     // Shadowing parent's inputSlot and outputSlot
@@ -371,5 +375,20 @@ public class TileEntityImprovedMolecularTransformer extends TileEntityMolecularT
             }
         }
         return 0;
+    }
+    @Override
+    public void onLoaded() {
+        super.onLoaded();
+        if (!this.world.isRemote && this.energy != null && this.energy.getDelegate() instanceof ic2.api.energy.tile.IEnergyTile) {
+            MinecraftForge.EVENT_BUS.post(new EnergyTileLoadEvent((ic2.api.energy.tile.IEnergyTile)this.energy.getDelegate()));
+        }
+    }
+
+    @Override
+    public void onUnloaded() {
+        super.onUnloaded();
+        if (!this.world.isRemote && this.energy != null && this.energy.getDelegate() instanceof ic2.api.energy.tile.IEnergyTile) {
+            MinecraftForge.EVENT_BUS.post(new EnergyTileUnloadEvent((ic2.api.energy.tile.IEnergyTile)this.energy.getDelegate()));
+        }
     }
 }

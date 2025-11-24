@@ -23,6 +23,7 @@ minecraft {
     
     // Add local libs to classpath
     // extraRunJvmArguments.add("-Djava.library.path=${file('libs')}")
+    extraRunJvmArguments.add("-Dmixin.config=mixins.iuaddon.json")
 }
 
 repositories {
@@ -61,6 +62,10 @@ dependencies {
     
     // Other dependencies
     compileOnly "mezz.jei:jei_1.12.2:4.15.0.272:api"
+    
+    // Mixin
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+    implementation 'org.spongepowered:mixin:0.8.5'
 }
 
 jar {
@@ -72,6 +77,7 @@ jar {
             "Implementation-Title": project.name,
             "Implementation-Version": "${version}",
             "Implementation-Vendor" :"myaddon",
+            "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
             "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
         ])
     }

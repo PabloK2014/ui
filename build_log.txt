@@ -29,25 +29,11 @@
 > Task :processMcLauncherResources NO-SOURCE
 > Task :mcLauncherClasses UP-TO-DATE
 
-> Task :compileJava FAILED
-D:\ae2\iu_addon\src\main\java\com\myaddon\iuaddon\container\ContainerImprovedMolecularTransformer.java:53: error: cannot find symbol
-        return this.base.isUsableByPlayer(player);
-                        ^
-  symbol:   method isUsableByPlayer(net.minecraft.entity.player.EntityPlayer)
-  location: variable base of type T
-Note: D:\ae2\iu_addon\src\main\java\com\myaddon\iuaddon\blocks\BlockImprovedMolecular.java uses or overrides a deprecated API.
+> Task :compileJava
+Note: SpongePowered MIXIN Annotation Processor Version=0.8.5
+Note: Supported obfuscation types: ObfuscationServiceMCP supports [searge,notch]
+Note: Some input files use or override a deprecated API.
 Note: Recompile with -Xlint:deprecation for details.
-1 error
-
-FAILURE: Build failed with an exception.
-
-* What went wrong:
-Execution failed for task ':compileJava'.
-> Compilation failed; see the compiler error output for details.
-
-* Try:
-> Run with --info option to get more log output.
-> Run with --scan to get full insights.
 
 Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
 
@@ -55,5 +41,5 @@ You can use '--warning-mode all' to show the individual deprecation warnings and
 
 For more on this, please refer to https://docs.gradle.org/8.5/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
 
-BUILD FAILED in 1s
+BUILD SUCCESSFUL in 3s
 8 actionable tasks: 1 executed, 7 up-to-date

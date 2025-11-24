@@ -144,6 +144,10 @@ public class IUAddon {
         // Регистрируем обработчик событий для генерации воды
         MinecraftForge.EVENT_BUS.register(new WaterGeneratorEventHandler());
         System.out.println("IU Addon: Registered Water Generator Event Handler");
+
+        // Регистрируем фикс для реактора
+        MinecraftForge.EVENT_BUS.register(new com.myaddon.iuaddon.events.ReactorFixHandler());
+        System.out.println("IU Addon: Registered Reactor Fix Handler");
         
         // Регистрируем команду для тестирования
         net.minecraftforge.fml.common.event.FMLServerStartingEvent.class.cast(null); // Заглушка для импорта
@@ -182,7 +186,69 @@ public class IUAddon {
 
     @Mod.EventHandler
     public void postInit(FMLPostInitializationEvent event) {
+        System.out.println("IU Addon: Post-initialization started...");
+        
+        // Add missing ores to Quantum Quarry list (IUCore.list)
+        // This replaces the MixinIUCore which caused crashes
+        try {
+            System.out.println("IU Addon: Adding missing ores to Quantum Quarry list...");
+            
+            // Curium Ore (from BlocksRadiationOre, meta 2)
+            // Note: BlocksRadiationOre.Type.curium_ore has metadata 2
+            if (IUItem.radiationore != null) {
+                ItemStack curiumOre = new ItemStack(IUItem.radiationore, 1, 2);
+                addInList(curiumOre);
+            } else {
+                 // Fallback if IUItem.radiationore is null (should not happen if mod is loaded)
+                 Item radiationOre = Item.getByNameOrId("industrialupgrade:blockradiationore");
+                 if (radiationOre != null) {
+                     ItemStack curiumOre = new ItemStack(radiationOre, 1, 2);
+                     addInList(curiumOre);
+                 }
+            }
+
+            // Uranium Ore (standard IC2 or OreDict)
+            addOre("oreUranium");
+
+            // Tin Ore
+            addOre("oreTin");
+
+            // Copper Ore
+            addOre("oreCopper");
+            
+            System.out.println("IU Addon: Ores added successfully!");
+            
+        } catch (Exception e) {
+            System.err.println("IU Addon: Failed to add ores to Quantum Quarry list!");
+            e.printStackTrace();
+        }
+        
         System.out.println("IU Addon: Post-initialization complete!");
+    }
+
+    // Helper method to add to IUCore.list if not present
+    private void addInList(ItemStack stack) {
+        if (stack.isEmpty()) return;
+        boolean add = true;
+        // Access IUCore.list directly
+        for (int i = 0; i < com.denfop.IUCore.list.size(); i++) {
+            if (com.denfop.IUCore.list.get(i).isItemEqual(stack)) {
+                add = false;
+                break;
+            }
+        }
+        if (add) {
+            com.denfop.IUCore.list.add(stack);
+        }
+    }
+
+    // Helper method to add from OreDictionary
+    private void addOre(String name) {
+        if (OreDictionary.getOres(name).size() >= 1) {
+            if (!com.denfop.IUCore.list.contains(OreDictionary.getOres(name).get(0))) {
+                com.denfop.IUCore.list.add(OreDictionary.getOres(name).get(0));
+            }
+        }
     }
     
     @Mod.EventHandler

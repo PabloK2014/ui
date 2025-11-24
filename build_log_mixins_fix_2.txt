@@ -1,0 +1,79 @@
+> Task :extractForgeUserdev SKIPPED
+> Task :extractMcpData SKIPPED
+> Task :extractDependencyATs SKIPPED
+> Task :generateForgeSrgMappings SKIPPED
+> Task :downloadLauncherAllVersionsManifest SKIPPED
+> Task :downloadLauncherVersionManifest SKIPPED
+> Task :downloadVanillaJars SKIPPED
+> Task :mergeVanillaSidedJars SKIPPED
+> Task :deobfuscateMergedJarToSrg SKIPPED
+> Task :downloadFernflower SKIPPED
+> Task :decompileSrgJar SKIPPED
+> Task :cleanupDecompSrgJar SKIPPED
+> Task :patchDecompiledJar SKIPPED
+> Task :remapDecompiledJar SKIPPED
+> Task :decompressDecompiledSources UP-TO-DATE
+> Task :compilePatchedMcJava UP-TO-DATE
+> Task :processPatchedMcResources UP-TO-DATE
+> Task :patchedMcClasses UP-TO-DATE
+> Task :compileApiJava NO-SOURCE
+> Task :processApiResources NO-SOURCE
+> Task :apiClasses UP-TO-DATE
+> Task :injectTags UP-TO-DATE
+> Task :compileInjectedTagsJava NO-SOURCE
+> Task :extractNatives2 UP-TO-DATE
+> Task :createMcLauncherFiles UP-TO-DATE
+> Task :compileMcLauncherJava UP-TO-DATE
+> Task :processInjectedTagsResources NO-SOURCE
+> Task :injectedTagsClasses UP-TO-DATE
+> Task :processMcLauncherResources NO-SOURCE
+> Task :mcLauncherClasses UP-TO-DATE
+
+> Task :compileJava FAILED
+Note: SpongePowered MIXIN Annotation Processor Version=0.8.5
+Note: Supported obfuscation types: ObfuscationServiceMCP supports [searge,notch]
+D:\ae2\iu_addon\src\main\java\com\myaddon\iuaddon\mixins\MixinTileEntityBaseNuclearReactorElectric.java:12: warning: Mixin target com.denfop.tiles.reactors.TileEntityBaseNuclearReactorElectric is public and should be specified in value
+@Mixin(targets = "com.denfop.tiles.reactors.TileEntityBaseNuclearReactorElectric")
+^
+D:\ae2\iu_addon\src\main\java\com\myaddon\iuaddon\mixins\MixinTileEntitySunnariumMaker.java:7: warning: Mixin target com.denfop.tiles.mechanism.TileEntitySunnariumMaker could not be fully resolved.
+@Mixin(targets = "com.denfop.tiles.mechanism.TileEntitySunnariumMaker")
+^
+D:\ae2\iu_addon\src\main\java\com\myaddon\iuaddon\mixins\MixinTileEntitySunnariumPanelMaker.java:12: warning: Mixin target com.denfop.tiles.mechanism.TileEntitySunnariumPanelMaker is public and should be specified in value
+@Mixin(targets = "com.denfop.tiles.mechanism.TileEntitySunnariumPanelMaker")
+^
+D:\ae2\iu_addon\src\main\java\com\myaddon\iuaddon\mixins\MixinTileEntitySunnariumPanelMaker.java:20: warning: @Overwrite is missing javadoc comment
+    protected void updateEntityServer() {
+                   ^
+D:\ae2\iu_addon\src\main\java\com\myaddon\iuaddon\mixins\MixinTileEntitySunnariumPanelMaker.java:25: error: cannot find symbol
+        if (output != null && this.outputSlot.canAdd(output.getRecipe().output.items) && this.energy.getEnergy() >= this.energyConsume && ((TileEntitySunnariumPanelMaker)(Object)this).sunenergy.getEnergy() >= 5) {
+                                                                                                                                            ^
+  symbol:   class TileEntitySunnariumPanelMaker
+  location: class MixinTileEntitySunnariumPanelMaker
+D:\ae2\iu_addon\src\main\java\com\myaddon\iuaddon\mixins\MixinTileEntitySunnariumPanelMaker.java:32: error: cannot find symbol
+            ((TileEntitySunnariumPanelMaker)(Object)this).sunenergy.useEnergy(5);
+              ^
+  symbol:   class TileEntitySunnariumPanelMaker
+  location: class MixinTileEntitySunnariumPanelMaker
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+2 errors
+4 warnings
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':compileJava'.
+> Compilation failed; see the compiler error output for details.
+
+* Try:
+> Run with --info option to get more log output.
+> Run with --scan to get full insights.
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.5/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD FAILED in 2s
+8 actionable tasks: 1 executed, 7 up-to-date
